@@ -20,7 +20,7 @@ This is an Open-Source API for Random Fun Facts & Trivia. It provides users with
 1. **Clone the repository**:
 
 ```sh
-git clone https://github.com/YOUR_GITHUB_USERNAME/fun-facts-api.git
+git clone https://github.com/manjunathmkotabal/fun-facts-api.git
 cd fun-facts-api
 ```
 
