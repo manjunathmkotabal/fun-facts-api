@@ -11,6 +11,12 @@ type Trivia struct {
 	Content  string `json:"content"`
 }
 
+type User struct {
+	gorm.Model
+	Username string `json:"username" gorm:"unique"`
+	Password string `json:"password"`
+}
+
 var DB *gorm.DB
 
 func InitDB() {
@@ -19,7 +25,7 @@ func InitDB() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	DB.AutoMigrate(&Trivia{})
+	DB.AutoMigrate(&Trivia{}, &User{})
 
 	// Seed data
 	seedData()
