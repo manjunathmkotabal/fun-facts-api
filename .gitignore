@@ -1,0 +1,23 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of the go coverage tool
+*.out
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.swp
+
+# Dependency directories
+vendor/
+
+# Environment variables file
+.env
+
+# SQLite database file
+trivia.db
