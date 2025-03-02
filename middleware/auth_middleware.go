@@ -1,14 +1,16 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/manjunath.kotabal/fun-facts-api/controllers"
 )
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(role string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -18,7 +20,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		claims := &controllers.Claims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(strings.TrimPrefix(tokenString, "Bearer "), claims, func(token *jwt.Token) (interface{}, error) {
 			return controllers.JwtKey, nil
 		})
 
@@ -28,7 +30,14 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("username", claims.Username)
+		log.Printf("Token role: %s, Required role: %s", claims.Role, role) // Add this line
+
+		if claims.Role != role {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }

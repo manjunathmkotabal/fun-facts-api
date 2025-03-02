@@ -15,10 +15,12 @@ var JwtKey = []byte("my_secret_key")
 type Credentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 type Claims struct {
 	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt.StandardClaims
 }
 
@@ -43,6 +45,7 @@ func Login(c *gin.Context) {
 	expirationTime := time.Now().Add(1 * time.Minute)
 	claims := &Claims{
 		Username: creds.Username,
+		Role:     user.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -56,6 +59,33 @@ func Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+func Signup(c *gin.Context) {
+	var creds Credentials
+	if err := c.BindJSON(&creds); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
+		return
+	}
+
+	user := models.User{
+		Username: creds.Username,
+		Password: string(hashedPassword),
+		Role:     creds.Role,
+	}
+
+	if err := models.DB.Create(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
 }
 
 func RefreshToken(c *gin.Context) {
@@ -75,7 +105,7 @@ func RefreshToken(c *gin.Context) {
 		return
 	}
 
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
+	if time.Until(time.Unix(claims.ExpiresAt, 0)) > 30*time.Second {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Token is not expired yet"})
 		return
 	}
