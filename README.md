@@ -143,9 +143,9 @@ The Fun Facts API allows users to sign up, log in, and query trivia facts. The A
    go run main.go
    ```
 
-4. Run the application:
+4. Run the application using `reflex`:
    ```sh
-   go run main.go
+   reflex -c reflex.conf
    ```
 
 ## Environment Variables
